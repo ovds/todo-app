@@ -1,24 +1,20 @@
-'use client'
+import Home from "@/app/home";
+import {Redis} from "@upstash/redis";
 
-import {Button, ChakraProvider} from '@chakra-ui/react'
-import {ArrowForwardIcon} from '@chakra-ui/icons'
-import {useRouter} from 'next/navigation'
+export default async function Page() {
+    const redis = new Redis({
+        url: 'https://wanted-mustang-44005.upstash.io',
+        token: 'AavlASQgYzZjMjYxZTMtNzEzZC00NzVmLWE0MGYtNjAyMTgzZDVhM2U4NjM0Y2E0NmI2NGEzNDliMThmOWMxYjQ2NDVhMTZhMzU=',
+    })
 
-export default function Home() {
-    const router = useRouter()
-
-    const handleClick = () => {
-        router.push('/home')
+    const exists = await redis.exists('data');
+    if (!exists) {
+        await redis.set('data', JSON.stringify({data: []}));
     }
 
+    const data = await redis.get('data');
+
     return (
-        <ChakraProvider>
-            <div className={'h-screen w-screen bg-slate-200'}>
-                <div className={'flex flex-col items-center justify-center h-full space-y-6'}>
-                    <h1 className={'text-6xl font-bold text-slate-900'}>Todo App</h1>
-                    <Button variant={'outline'} colorScheme={'blue'} size={'lg'} rightIcon={<ArrowForwardIcon />}>Go to home page</Button>
-                </div>
-            </div>
-        </ChakraProvider>
+        <Home data={data.data}/>
     )
 }
